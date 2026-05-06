@@ -12,13 +12,17 @@ import Signup from "./pages/Signup";
 
 import Layout from "./components/Layout";
 
+import SystemTester from './pages/SystemTester'
+
 import ProtectedRoute from "./components/ProtectedRoute";
+import Team from './pages/Team'
 
 function App() {
 
   return (
 
     <Routes>
+      <Route path="/team" element={<Team />} />
 
       <Route
         path="/login"
@@ -34,6 +38,7 @@ function App() {
         path="/client/:id"
         element={<ClientPage />}
       />
+      <Route path="/tester" element={<SystemTester />} />
 
       <Route
         path="/"

@@ -53,6 +53,7 @@ export default function ClientPage() {
       project_id: id,
       comment,
       timestamp: tsStr,
+      agency_id: project.agency_id,
       type: 'client'
     }])
     setComment('')

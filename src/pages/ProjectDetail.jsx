@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import {
+  logActivity
+} from '../lib/activity'
+import {
+  canApprove,
+  canDelete
+} from '../lib/permissions'
 import { ArrowLeft, Clock, CheckCircle, AlertCircle, MessageSquare, Lock } from 'lucide-react'
 
 export default function ProjectDetail() {
@@ -23,12 +30,24 @@ export default function ProjectDetail() {
 
   async function handleApprove() {
     await supabase.from('projects').update({ status: 'approved' }).eq('id', id)
+    await logActivity({
+  agencyId: project.agency_id,
+  projectId: id,
+  userEmail: profile?.email,
+  action: 'approved project',
+})
     fetchAll()
   }
 
   async function handleChanges() {
     const rev = (project?.revision_count || 0) + 1
     await supabase.from('projects').update({ status: 'changes requested', revision_count: rev }).eq('id', id)
+    await logActivity({
+  agencyId: project.agency_id,
+  projectId: id,
+  userEmail: profile?.email,
+  action: 'requested changes',
+})
     fetchAll()
   }
 
@@ -38,6 +57,12 @@ export default function ProjectDetail() {
   }
 
   async function addInternalNote(e) {
+    await logActivity({
+  agencyId: project.agency_id,
+  projectId: id,
+  userEmail: profile?.email,
+  action: 'added internal note',
+})
     e.preventDefault()
     if (!note.trim()) return
     setSubmitting(true)
@@ -143,52 +168,140 @@ export default function ProjectDetail() {
           </div>
 
           {/* Action buttons */}
-          {!isLocked && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-              <button onClick={handleApprove} style={{
-                background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)',
-                color: '#22c55e', padding: '10px', borderRadius: '8px',
-                fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-              }}><CheckCircle size={14} /> Approve</button>
-              <button onClick={handleChanges} disabled={atLimit} style={{
-                background: atLimit ? '#141417' : 'rgba(239,68,68,0.08)',
-                border: `1px solid ${atLimit ? '#2e2e3c' : 'rgba(239,68,68,0.22)'}`,
-                color: atLimit ? '#3a3a4a' : '#ef4444',
-                padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: 500,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                cursor: atLimit ? 'not-allowed' : 'pointer'
-              }}><AlertCircle size={14} /> Request Changes</button>
-              <button
-  onClick={async () => {
+{
+  !isLocked &&
+  canApprove(profile?.role) && (
+  <div style={{
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gridAutoRows: '1fr',
+    gap: '8px'
+  }}>
 
-    await supabase
-      .from('projects')
-      .update({
-        archived: true,
-      })
-      .eq('id', id)
+    <button
+      onClick={handleApprove}
+      style={{
+        background: 'rgba(34,197,94,0.1)',
+        border: '1px solid rgba(34,197,94,0.25)',
+        color: '#22c55e',
+        padding: '10px',
+        borderRadius: '8px',
+        fontSize: '13px',
+        fontWeight: 500,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px'
+      }}
+    >
+      <CheckCircle size={14} />
+      Approve
+    </button>
 
-    navigate('/')
+    <button
+      onClick={handleChanges}
+      disabled={atLimit}
+      style={{
+        background: atLimit
+          ? '#141417'
+          : 'rgba(239,68,68,0.08)',
+        border: `1px solid ${
+          atLimit
+            ? '#2e2e3c'
+            : 'rgba(239,68,68,0.22)'
+        }`,
+        color: atLimit
+          ? '#3a3a4a'
+          : '#ef4444',
+        padding: '10px',
+        borderRadius: '8px',
+        fontSize: '13px',
+        fontWeight: 500,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
+        cursor: atLimit
+          ? 'not-allowed'
+          : 'pointer'
+      }}
+    >
+      <AlertCircle size={14} />
+      Request Changes
+    </button>
 
-  }}
-  style={{
-    background: 'rgba(245,158,11,0.08)',
-    border: '1px solid rgba(245,158,11,0.22)',
-    color: '#f59e0b',
-    padding: '10px',
-    borderRadius: '8px',
-    fontSize: '13px',
-    fontWeight: 500,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px'
-  }}
->
-  Archive Project
-</button>
-            </div>
-          )}
+    <button
+      onClick={async () => {
+
+        await supabase
+          .from('projects')
+          .update({
+            archived: true,
+            archived_at: new Date(),
+          })
+          .eq('id', id)
+
+        navigate('/')
+
+      }}
+      style={{
+        background: 'rgba(245,158,11,0.08)',
+        border: '1px solid rgba(245,158,11,0.22)',
+        color: '#f59e0b',
+        padding: '10px',
+        borderRadius: '8px',
+        fontSize: '13px',
+        fontWeight: 500,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px'
+      }}
+    >
+      Archive Project
+    </button>
+
+    <button
+      onClick={async () => {
+
+        const confirmDelete = window.confirm(
+          'Permanently delete this project?'
+        )
+
+        if (!confirmDelete) return
+
+        await supabase
+          .from('comments')
+          .delete()
+          .eq('project_id', id)
+
+        await supabase
+          .from('projects')
+          .delete()
+          .eq('id', id)
+
+        navigate('/')
+
+      }}
+      style={{
+        background: 'rgba(239,68,68,0.08)',
+        border: '1px solid rgba(239,68,68,0.22)',
+        color: '#ef4444',
+        padding: '10px',
+        borderRadius: '8px',
+        fontSize: '13px',
+        fontWeight: 500,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px'
+      }}
+    >
+      Delete Permanently
+    </button>
+
+  </div>
+)}
 
           {isLocked && (
             <div style={{
