@@ -1,29 +1,67 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  Routes,
+  Route,
+} from "react-router-dom";
 
 import Dashboard from "./pages/Dashboard";
 import ClientPage from "./pages/ClientPage";
+import ProjectDetail from "./pages/ProjectDetail";
+
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+
+import Layout from "./components/Layout";
+
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
 
   return (
 
-    <BrowserRouter>
+    <Routes>
 
-      <Routes>
+      <Route
+        path="/login"
+        element={<Login />}
+      />
 
-        <Route
-          path="/"
-          element={<Dashboard />}
-        />
+      <Route
+        path="/signup"
+        element={<Signup />}
+      />
 
-        <Route
-          path="/client/:id"
-          element={<ClientPage />}
-        />
+      <Route
+        path="/client/:id"
+        element={<ClientPage />}
+      />
 
-      </Routes>
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
 
-    </BrowserRouter>
+            <Layout>
+              <Dashboard />
+            </Layout>
+
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/project/:id"
+        element={
+          <ProtectedRoute>
+
+            <Layout>
+              <ProjectDetail />
+            </Layout>
+
+          </ProtectedRoute>
+        }
+      />
+
+    </Routes>
   );
 }
 
