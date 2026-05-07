@@ -13,6 +13,7 @@ import Signup from "./pages/Signup";
 import Layout from "./components/Layout";
 
 import SystemTester from './pages/SystemTester'
+import Activity from './pages/Activity'
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Team from './pages/Team'
@@ -23,6 +24,10 @@ function App() {
 
     <Routes>
       <Route path="/team" element={<Team />} />
+      <Route
+  path="/activity"
+  element={<Activity />}
+/>
 
       <Route
         path="/login"

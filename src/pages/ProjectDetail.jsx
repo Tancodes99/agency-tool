@@ -17,9 +17,32 @@ export default function ProjectDetail() {
   const [comments, setComments] = useState([])
   const [note, setNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [profile, setProfile] = useState(null)
   const videoRef = useRef(null)
 
-  useEffect(() => { fetchAll() }, [id])
+ useEffect(() => {
+
+  fetchAll()
+
+  fetchProfile()
+
+}, [id])
+  async function fetchProfile() {
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+
+  if (!user) return
+
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+
+  setProfile(data)
+}
 
   async function fetchAll() {
     const { data: p } = await supabase.from('projects').select('*').eq('id', id).single()
@@ -33,6 +56,12 @@ export default function ProjectDetail() {
     await logActivity({
   agencyId: project.agency_id,
   projectId: id,
+  userEmail: 'Owner',
+  action: 'Approved project',
+})
+    await logActivity({
+  agencyId: project.agency_id,
+  projectId: id,
   userEmail: profile?.email,
   action: 'approved project',
 })
@@ -42,6 +71,12 @@ export default function ProjectDetail() {
   async function handleChanges() {
     const rev = (project?.revision_count || 0) + 1
     await supabase.from('projects').update({ status: 'changes requested', revision_count: rev }).eq('id', id)
+   await logActivity({
+  agencyId: project.agency_id,
+  projectId: id,
+  userEmail: 'Owner',
+  action: 'Requested changes',
+})
     await logActivity({
   agencyId: project.agency_id,
   projectId: id,
@@ -57,12 +92,7 @@ export default function ProjectDetail() {
   }
 
   async function addInternalNote(e) {
-    await logActivity({
-  agencyId: project.agency_id,
-  projectId: id,
-  userEmail: profile?.email,
-  action: 'added internal note',
-})
+
     e.preventDefault()
     if (!note.trim()) return
     setSubmitting(true)
@@ -76,10 +106,17 @@ export default function ProjectDetail() {
       timestamp: tsStr,
       type: 'internal'
     }])
+    await logActivity({
+  agencyId: project.agency_id,
+  projectId: id,
+  userEmail: profile?.email,
+  action: 'added internal note',
+})
     setNote('')
     fetchAll()
     setSubmitting(false)
   }
+    
 
   function seekTo(ts) {
     if (!videoRef.current || !ts) return
