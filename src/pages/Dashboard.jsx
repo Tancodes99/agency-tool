@@ -631,15 +631,26 @@ function buildClientStats(data) {
                 }}
               >
 
-                <video
-                  src={proj.video_url}
-                  controls
-                  style={{
-                    width: '100%',
-                    maxHeight: '220px',
-                    objectFit: 'cover'
-                  }}
-                />
+                <div style={{
+  width: '100%', height: '160px',
+  background: '#070709',
+  display: 'flex', alignItems: 'center', justifyContent: 'center'
+}}>
+  <div style={{
+    width: '40px', height: '40px', borderRadius: '50%',
+    background: 'rgba(124,92,252,0.18)',
+    border: '1.5px solid #7c5cfc',
+    display: 'flex', alignItems: 'center', justifyContent: 'center'
+  }}>
+    <div style={{
+      width: 0, height: 0,
+      borderTop: '8px solid transparent',
+      borderBottom: '8px solid transparent',
+      borderLeft: '14px solid #7c5cfc',
+      marginLeft: '3px'
+    }} />
+  </div>
+</div>
 
                 <div style={{ padding: '14px' }}>
 

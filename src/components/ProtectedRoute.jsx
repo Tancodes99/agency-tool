@@ -1,28 +1,42 @@
-import { Navigate } from "react-router-dom";
+import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
+import { Navigate } from 'react-router-dom'
 
-import { useAuth } from "../contexts/AuthContext";
+export default function ProtectedRoute({
+  children
+}) {
 
-function ProtectedRoute({ children }) {
+  const [loading, setLoading]
+    = useState(true)
 
-  const {
-    user,
-    loading,
-  } = useAuth();
+  const [authenticated,
+    setAuthenticated]
+    = useState(false)
 
-  if (loading) {
+  useEffect(() => {
 
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
+    checkUser()
 
-        Loading...
+  }, [])
 
-      </div>
-    );
+  async function checkUser() {
+
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+
+    setAuthenticated(!!user)
+
+    setLoading(false)
   }
 
-  return user
-    ? children
-    : <Navigate to="/login" />;
-}
+  if (loading) {
+    return null
+  }
 
-export default ProtectedRoute;
+  if (!authenticated) {
+    return <Navigate to="/login" />
+  }
+
+  return children
+}
