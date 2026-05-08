@@ -33,3 +33,9 @@ export function canApprove(role) {
     'manager'
   ].includes(role)
 }
+export function canManageClients(role) {
+  return (
+    role === 'owner' ||
+    role === 'manager'
+  )
+}

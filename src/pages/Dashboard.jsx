@@ -3,7 +3,8 @@ import { supabase } from '../lib/supabase'
 import { uploadVideo } from '../lib/upload'
 
 import {
-  canUpload
+  canUpload,
+  canManageClients
 } from '../lib/permissions'
 
 import {
@@ -45,10 +46,19 @@ const statusConfig = {
 export default function Dashboard() {
 
   const [projects, setProjects] = useState([])
+  const [clientStats, setClientStats]
+  = useState([])
   const [profile, setProfile] = useState(null)
 
   const [title, setTitle] = useState('')
-  const [clientName, setClientName] = useState('')
+  const [clientName, setClientName]
+  = useState('')
+
+const [clients, setClients]
+  = useState([])
+
+const [newClient, setNewClient]
+  = useState('')
   const [file, setFile] = useState(null)
 
   const [uploading, setUploading] = useState(false)
@@ -67,8 +77,12 @@ export default function Dashboard() {
   useEffect(() => {
 
     if (profile) {
-      fetchProjects()
-    }
+
+  fetchProjects()
+
+  fetchClients()
+
+}
 
   }, [profile])
 
@@ -89,6 +103,67 @@ export default function Dashboard() {
     setProfile(data)
   }
 
+  async function fetchClients() {
+
+  if (!profile?.agency_id) return
+
+  const { data } = await supabase
+
+    .from('clients')
+
+    .select('*')
+
+    .eq('agency_id', profile.agency_id)
+
+    .order('name')
+
+  if (data) {
+    setClients(data)
+  }
+}
+function buildClientStats(data) {
+
+  const grouped = {}
+
+  data.forEach(project => {
+
+    const client =
+      project.client_name || 'Unknown'
+
+    if (!grouped[client]) {
+
+      grouped[client] = {
+        name: client,
+        pending: 0,
+        approved: 0,
+        changes: 0,
+        total: 0,
+      }
+    }
+
+    grouped[client].total++
+
+    if (project.status === 'pending') {
+      grouped[client].pending++
+    }
+
+    if (project.status === 'approved') {
+      grouped[client].approved++
+    }
+
+    if (
+      project.status ===
+      'changes requested'
+    ) {
+      grouped[client].changes++
+    }
+
+  })
+
+  setClientStats(
+    Object.values(grouped)
+  )
+}
   async function fetchProjects() {
 
     const { data } = await supabase
@@ -101,8 +176,12 @@ export default function Dashboard() {
       })
 
     if (data) {
-      setProjects(data)
-    }
+
+  setProjects(data)
+
+  buildClientStats(data)
+
+}
   }
 
   async function handleUpload(e) {
@@ -123,19 +202,36 @@ export default function Dashboard() {
 
       const url = await uploadVideo(file)
 
-      const { error } = await supabase
-        .from('projects')
-        .insert([
-          {
-            title,
-            client_name: clientName,
-            video_url: url,
-            status: 'pending',
-            revision_count: 0,
-            revision_limit: 2,
-            agency_id: profile.agency_id
-          }
-        ])
+      const { data, error } = await supabase
+
+  .from('projects')
+
+  .insert([
+    {
+      title,
+      client_name: clientName,
+      status: 'pending',
+      revision_count: 0,
+      revision_limit: 2,
+      agency_id: profile.agency_id
+    }
+  ])
+
+  .select()
+
+  .single()
+  await supabase
+
+  .from('project_versions')
+
+  .insert([
+    {
+      project_id: data.id,
+      video_url: url,
+      version_number: 1,
+      uploaded_by: profile.email
+    }
+  ])
 
       if (error) {
 
@@ -281,13 +377,91 @@ export default function Dashboard() {
                 }
               />
 
-              <input
-                placeholder="Client Name"
-                value={clientName}
-                onChange={(e) =>
-                  setClientName(e.target.value)
-                }
-              />
+              <select
+  value={clientName}
+
+  onChange={(e) =>
+    setClientName(e.target.value)
+  }
+>
+
+  <option value="">
+    Select Client
+  </option>
+
+  {
+    clients.map(client => (
+
+      <option
+        key={client.id}
+        value={client.name}
+      >
+        {client.name}
+      </option>
+
+    ))
+  }
+
+</select>
+{
+  canManageClients(profile?.role) && (
+
+    <div
+      style={{
+        display: 'flex',
+        gap: '8px',
+        marginTop: '8px'
+      }}
+    >
+
+      <input
+        type="text"
+
+        placeholder="New Client"
+
+        value={newClient}
+
+        onChange={(e) =>
+          setNewClient(e.target.value)
+        }
+      />
+
+      <button
+
+        type="button"
+
+        onClick={async () => {
+
+          if (!newClient.trim()) return
+
+          await supabase
+
+            .from('clients')
+
+            .insert([
+              {
+                agency_id:
+                  profile.agency_id,
+
+                name: newClient
+              }
+            ])
+
+          setNewClient('')
+
+          fetchClients()
+
+        }}
+      >
+
+        Add
+
+      </button>
+
+    </div>
+
+  )
+}
 
             </div>
 
@@ -328,6 +502,99 @@ export default function Dashboard() {
         )
       }
 
+<div
+  style={{
+    display: 'grid',
+    gridTemplateColumns:
+      'repeat(auto-fill, minmax(220px, 1fr))',
+
+    gap: '16px',
+
+    marginBottom: '24px'
+  }}
+>
+
+  {
+    clientStats.map(client => (
+
+      <div
+        key={client.name}
+
+        style={{
+          background: '#141417',
+          border: '1px solid #1f1f24',
+          borderRadius: '14px',
+          padding: '18px'
+        }}
+      >
+
+        <div
+          style={{
+            color: '#fff',
+            fontSize: '15px',
+            fontWeight: 600,
+            marginBottom: '14px'
+          }}
+        >
+          {client.name}
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '8px',
+            fontSize: '13px'
+          }}
+        >
+
+          <div
+            style={{
+              color: '#f59e0b'
+            }}
+          >
+            Pending:
+            {' '}
+            {client.pending}
+          </div>
+
+          <div
+            style={{
+              color: '#22c55e'
+            }}
+          >
+            Approved:
+            {' '}
+            {client.approved}
+          </div>
+
+          <div
+            style={{
+              color: '#ef4444'
+            }}
+          >
+            Changes:
+            {' '}
+            {client.changes}
+          </div>
+
+          <div
+            style={{
+              color: '#777'
+            }}
+          >
+            Total:
+            {' '}
+            {client.total}
+          </div>
+
+        </div>
+
+      </div>
+
+    ))
+  }
+
+</div>
       {/* Projects Grid */}
 
       <div

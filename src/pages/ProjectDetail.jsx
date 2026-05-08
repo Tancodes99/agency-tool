@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import {
   logActivity
 } from '../lib/activity'
+import { uploadVideo } from '../lib/upload'
 import {
   canApprove,
   canDelete
@@ -14,6 +15,10 @@ export default function ProjectDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [project, setProject] = useState(null)
+  const [versions, setVersions] = useState([])
+
+const [selectedVersion, setSelectedVersion]
+  = useState(null)
   const [comments, setComments] = useState([])
   const [note, setNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -27,6 +32,17 @@ export default function ProjectDetail() {
   fetchProfile()
 
 }, [id])
+useEffect(() => {
+
+  if (selectedVersion) {
+
+    fetchComments(
+      selectedVersion.id
+    )
+
+  }
+
+}, [selectedVersion])
   async function fetchProfile() {
 
   const {
@@ -44,21 +60,56 @@ export default function ProjectDetail() {
   setProfile(data)
 }
 
-  async function fetchAll() {
-    const { data: p } = await supabase.from('projects').select('*').eq('id', id).single()
-    const { data: c } = await supabase.from('comments').select('*').eq('project_id', id).order('created_at', { ascending: true })
-    if (p) setProject(p)
-    if (c) setComments(c)
+async function fetchComments(versionId) {
+
+  if (!versionId) return
+
+  const { data } = await supabase
+
+    .from('comments')
+
+    .select('*')
+
+    .eq('version_id', versionId)
+
+    .order('created_at', {
+      ascending: true
+    })
+
+  if (data) {
+    setComments(data)
   }
+}
+async function fetchAll() {
+    const { data: p } = await supabase.from('projects').select('*').eq('id', id).single()
+
+   const { data: v } = await supabase
+
+  .from('project_versions')
+
+  .select('*')
+
+  .eq('project_id', id)
+
+  .order('version_number', {
+    ascending: false
+  })
+    if (p) setProject(p)
+    if (v) {
+
+  setVersions(v)
+
+  if (!selectedVersion) {
+    setSelectedVersion(v[0])
+  }
+
+}
+     
+  }
+
 
   async function handleApprove() {
     await supabase.from('projects').update({ status: 'approved' }).eq('id', id)
-    await logActivity({
-  agencyId: project.agency_id,
-  projectId: id,
-  userEmail: 'Owner',
-  action: 'Approved project',
-})
     await logActivity({
   agencyId: project.agency_id,
   projectId: id,
@@ -71,12 +122,6 @@ export default function ProjectDetail() {
   async function handleChanges() {
     const rev = (project?.revision_count || 0) + 1
     await supabase.from('projects').update({ status: 'changes requested', revision_count: rev }).eq('id', id)
-   await logActivity({
-  agencyId: project.agency_id,
-  projectId: id,
-  userEmail: 'Owner',
-  action: 'Requested changes',
-})
     await logActivity({
   agencyId: project.agency_id,
   projectId: id,
@@ -101,11 +146,12 @@ export default function ProjectDetail() {
     const secs = ts % 60
     const tsStr = `${mins}:${secs.toString().padStart(2, '0')}`
     await supabase.from('comments').insert([{
-      project_id: id,
-      comment: note,
-      timestamp: tsStr,
-      type: 'internal'
-    }])
+  project_id: id,
+  version_id: selectedVersion?.id,
+  comment: note,
+  timestamp: tsStr,
+  type: 'internal'
+}])
     await logActivity({
   agencyId: project.agency_id,
   projectId: id,
@@ -179,10 +225,122 @@ export default function ProjectDetail() {
         {/* Left — Video */}
         <div>
           <div style={{ background: '#070709', borderRadius: '10px', overflow: 'hidden', border: '1px solid #1e1e26', marginBottom: '12px' }}>
-            <video ref={videoRef} src={project.video_url} controls
+            <div
+  style={{
+    color: '#fff',
+    fontSize: '13px',
+    marginBottom: '8px'
+  }}
+>
+  Viewing:
+  {' '}
+  V{selectedVersion?.version_number}
+</div>
+            <video ref={videoRef} src={selectedVersion?.video_url} controls
               style={{ width: '100%', display: 'block', maxHeight: '380px', objectFit: 'contain' }} />
           </div>
 
+<div
+  style={{
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '12px',
+    flexWrap: 'wrap'
+  }}
+>
+
+  {
+    versions.map(version => (
+
+      <button
+        key={version.id}
+
+        onClick={() =>
+          setSelectedVersion(version)
+        }
+
+        style={{
+          background:
+            selectedVersion?.id === version.id
+              ? '#7c5cfc'
+              : '#141417',
+
+          border:
+            selectedVersion?.id === version.id
+              ? '1px solid #7c5cfc'
+              : '1px solid #2e2e3c',
+
+          color: '#fff',
+
+          padding: '8px 12px',
+
+          borderRadius: '8px',
+
+          fontSize: '12px'
+        }}
+      >
+
+        V{version.version_number}
+
+      </button>
+
+    ))
+  }
+
+</div>
+<div
+  style={{
+    marginBottom: '16px'
+  }}
+>
+
+  <input
+    type="file"
+    accept="video/*"
+
+    onChange={async (e) => {
+
+      const file = e.target.files[0]
+
+      if (!file) return
+
+const publicUrl =
+  await uploadVideo(file)
+      
+
+      const nextVersion =
+        versions.length + 1
+
+      const { data: newVersion } = await supabase
+
+  .from('project_versions')
+
+  .insert([
+    {
+      project_id: id,
+      video_url: publicUrl,
+      version_number: nextVersion,
+      uploaded_by: profile?.email
+    }
+  ])
+
+  .select()
+
+  .single()
+
+      await logActivity({
+        agencyId: project.agency_id,
+        projectId: id,
+        userEmail: profile?.email,
+        action: `uploaded V${nextVersion}`,
+      })
+setSelectedVersion(newVersion)
+      fetchAll()
+
+    }}
+  />
+
+</div>
           {/* Revision info */}
           <div style={{
             background: '#141417', border: `1px solid ${atLimit ? 'rgba(239,68,68,0.3)' : '#1e1e26'}`,
