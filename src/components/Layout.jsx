@@ -15,14 +15,12 @@ export default function Layout({ children }) {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#0c0c0f', color: '#f0f0f4' }}>
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-
       <div style={{
         flex: 1,
         marginLeft: collapsed ? '60px' : '200px',
         transition: 'margin-left 0.2s',
         minWidth: 0
       }}>
-        {/* Topbar */}
         <div style={{
           height: '52px', background: '#141417',
           borderBottom: '1px solid #1e1e26',
@@ -54,8 +52,6 @@ export default function Layout({ children }) {
             }}>PM</div>
           </div>
         </div>
-
-        {/* Page content */}
         <div style={{ padding: '24px' }}>
           {children}
         </div>
