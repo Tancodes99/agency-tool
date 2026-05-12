@@ -1,15 +1,11 @@
-import { LayoutDashboard, FolderOpen, Users, Settings, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, FolderOpen, Users, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: FolderOpen, label: 'Projects', path: '/' },
   { icon: Users, label: 'Team', path: '/team' },
-  {
-  icon: FolderOpen,
-  label: 'Planner',
-  path: '/planner'
-},
+{ icon: Calendar, label: 'Planner', path: '/planner' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ]
 
