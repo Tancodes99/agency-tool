@@ -3,6 +3,7 @@ import {
   Route
 } from 'react-router-dom'
 
+import Planner from './pages/Planner'
 import Dashboard from './pages/Dashboard'
 import ClientPage from './pages/ClientPage'
 import ProjectDetail from './pages/ProjectDetail'
@@ -67,6 +68,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/planner"
+  element={
+    <ProtectedRoute>
+      <Layout>
+        <Planner />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
 
       </Routes>
 

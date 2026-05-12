@@ -5,6 +5,11 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: FolderOpen, label: 'Projects', path: '/' },
   { icon: Users, label: 'Team', path: '/team' },
+  {
+  icon: FolderOpen,
+  label: 'Planner',
+  path: '/planner'
+},
   { icon: Settings, label: 'Settings', path: '/settings' },
 ]
 
