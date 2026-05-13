@@ -262,7 +262,7 @@ async function fetchAll() {
         style={{
           background:
             selectedVersion?.id === version.id
-              ? '#7c5cfc'
+              ? 'var(--brand-color)'
               : '#141417',
 
           border:
@@ -357,7 +357,7 @@ setSelectedVersion(newVersion)
               <div style={{
                 height: '100%', borderRadius: '2px',
                 width: `${Math.min((project.revision_count / project.revision_limit) * 100, 100)}%`,
-                background: atLimit ? '#ef4444' : '#7c5cfc'
+                background: atLimit ? '#ef4444' : 'var(--brand-color)'
               }} />
             </div>
           </div>
@@ -568,7 +568,7 @@ setSelectedVersion(newVersion)
                   style={{ marginBottom: '8px', resize: 'none', fontSize: '12px' }}
                 />
                 <button type="submit" disabled={submitting} style={{
-                  background: '#7c5cfc', border: 'none', color: '#fff',
+                  background: 'var(--brand-color)', border: 'none', color: '#fff',
                   padding: '7px', borderRadius: '7px', fontSize: '12px',
                   fontWeight: 500, width: '100%'
                 }}>

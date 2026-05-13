@@ -210,7 +210,7 @@ export default function Planner() {
                     <div style={{
                       fontSize: '12px', fontWeight: 500, marginBottom: '4px',
                       color: isToday ? '#fff' : '#6b6b7a',
-                      background: isToday ? '#7c5cfc' : 'transparent',
+                      background: isToday ? 'var(--brand-color)' : 'transparent',
                       width: '22px', height: '22px', borderRadius: '50%',
                       display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}>{day}</div>
@@ -250,7 +250,7 @@ export default function Planner() {
             <button
               onClick={() => setShowForm(!showForm)}
               style={{
-                background: '#7c5cfc', border: 'none', color: '#fff',
+                background: 'var(--brand-color)', border: 'none', color: '#fff',
                 padding: '6px 14px', borderRadius: '7px', fontSize: '12px',
                 fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
               }}
@@ -334,7 +334,7 @@ export default function Planner() {
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button type="submit" disabled={saving} style={{
-                  background: saving ? '#3a3a4a' : '#7c5cfc', border: 'none',
+                  background: saving ? '#3a3a4a' : 'var(--brand-color)', border: 'none',
                   color: '#fff', padding: '7px 18px', borderRadius: '7px',
                   fontSize: '13px', fontWeight: 500, cursor: 'pointer'
                 }}>{saving ? 'Saving...' : 'Save Post'}</button>

@@ -47,7 +47,7 @@ export default function Layout({ children }) {
             }}>Logout</button>
             <div style={{
               width: '28px', height: '28px', borderRadius: '50%',
-              background: '#7c5cfc', display: 'flex', alignItems: 'center',
+              background: 'var(--brand-color)', display: 'flex', alignItems: 'center',
               justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#fff'
             }}>PM</div>
           </div>

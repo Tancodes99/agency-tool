@@ -107,7 +107,7 @@ export default function Team() {
                 <option value="manager">Manager</option>
               </select>
               <button type="submit" disabled={loading} style={{
-                background: loading ? '#3a3a4a' : '#7c5cfc',
+                background: loading ? '#3a3a4a' : 'var(--brand-color)',
                 border: 'none', color: '#fff',
                 borderRadius: '8px', fontSize: '13px', fontWeight: 500,
                 cursor: 'pointer'

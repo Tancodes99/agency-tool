@@ -194,7 +194,7 @@ export default function SystemTester() {
         onClick={runTests}
         disabled={running}
         style={{
-          background: '#7c5cfc',
+          background: 'var(--brand-color)',
           border: 'none',
           color: '#fff',
           padding: '12px 18px',

@@ -321,7 +321,7 @@ function buildClientStats(data) {
                 setShowForm(!showForm)
               }
               style={{
-                background: '#7c5cfc',
+                background: 'var(--brand-color)',
                 border: 'none',
                 color: '#fff',
                 padding: '10px 16px',
@@ -480,7 +480,7 @@ function buildClientStats(data) {
               type="submit"
               disabled={uploading}
               style={{
-                background: '#7c5cfc',
+                background: 'var(--brand-color)',
                 border: 'none',
                 color: '#fff',
                 padding: '10px 18px',

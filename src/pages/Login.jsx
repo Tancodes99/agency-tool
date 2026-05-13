@@ -31,7 +31,7 @@ export default function Login() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
           <div style={{
             width: '28px', height: '28px', borderRadius: '7px',
-            background: '#7c5cfc', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            background: 'var(--brand-color)', display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="#fff">
               <path d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5C11.5 14.5 14 11.5 14 8V4L8 1z"/>
@@ -74,7 +74,7 @@ export default function Login() {
             />
           </div>
           <button type="submit" disabled={loading} style={{
-            width: '100%', background: loading ? '#3a3a4a' : '#7c5cfc',
+            width: '100%', background: loading ? '#3a3a4a' : 'var(--brand-color)',
             border: 'none', color: '#fff', padding: '10px',
             borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer'
           }}>

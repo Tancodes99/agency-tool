@@ -1,5 +1,28 @@
-import { LayoutDashboard, FolderOpen, Users, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import {
+  useEffect,
+  useState
+} from 'react'
+
+import {
+  LayoutDashboard,
+  FolderOpen,
+  Users,
+  Calendar,
+  Settings,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react'
+
+import {
+  useNavigate,
+  useLocation
+} from 'react-router-dom'
+
+import { supabase }
+from '../lib/supabase'
+
+import { getBrandColor }
+from '../lib/theme'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -10,8 +33,40 @@ const navItems = [
 ]
 
 export default function Sidebar({ collapsed, setCollapsed }) {
+  const [profile, setProfile]
+  = useState(null)
   const navigate = useNavigate()
   const location = useLocation()
+useEffect(() => {
+
+  fetchProfile()
+
+}, [])
+
+async function fetchProfile() {
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+
+  if (!user) return
+
+  const { data } = await supabase
+
+    .from('profiles')
+
+    .select('*')
+
+    .eq('id', user.id)
+
+    .single()
+
+  setProfile(data)
+}
+const brandColor =
+  getBrandColor(profile)
+
+
 
   return (
     <div style={{
@@ -38,7 +93,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       }}>
         <div style={{
           width: '26px', height: '26px', borderRadius: '7px',
-          background: '#7c5cfc', display: 'flex', alignItems: 'center',
+          background: brandColor, display: 'flex', alignItems: 'center',
           justifyContent: 'center', flexShrink: 0
         }}>
           <svg width="13" height="13" viewBox="0 0 16 16" fill="#fff">

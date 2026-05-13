@@ -7,6 +7,7 @@ import Signup from './pages/Signup'
 import Layout from './components/Layout'
 import Team from './pages/Team'
 import Planner from './pages/Planner'
+import Settings from './pages/Settings'
 
 function App() {
   return (
@@ -18,6 +19,14 @@ function App() {
       <Route path="/project/:id" element={<Layout><ProjectDetail /></Layout>} />
       <Route path="/team" element={<Layout><Team /></Layout>} />
       <Route path="/planner" element={<Layout><Planner /></Layout>} />
+      <Route
+  path="/settings"
+  element={
+      <Layout>
+        <Settings />
+      </Layout>
+    }
+/>
     </Routes>
   )
 }

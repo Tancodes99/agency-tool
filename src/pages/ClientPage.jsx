@@ -93,7 +93,7 @@ export default function ClientPage() {
         }}>
           <div style={{
             width: '26px', height: '26px', borderRadius: '7px',
-            background: '#7c5cfc', display: 'flex', alignItems: 'center',
+            background: 'var(--brand-color)', display: 'flex', alignItems: 'center',
             justifyContent: 'center', flexShrink: 0
           }}>
             <svg width="13" height="13" viewBox="0 0 16 16" fill="#fff">
@@ -214,7 +214,7 @@ export default function ClientPage() {
               style={{ marginBottom: '10px', resize: 'none' }}
             />
             <button type="submit" disabled={submitting} style={{
-              background: submitting ? '#3a3a4a' : '#7c5cfc', border: 'none',
+              background: submitting ? '#3a3a4a' : 'var(--brand-color)', border: 'none',
               color: '#fff', padding: '8px 20px', borderRadius: '8px',
               fontSize: '13px', fontWeight: 500, width: '100%'
             }}>
